@@ -707,7 +707,7 @@
 
 <script>
 // ── PUT YOUR GEMINI API KEY HERE ──
-const API_KEY = 'AIzaSyB99EziozLJo3OJu9UNNTTQIXZFRdkp-9c';
+const API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
 
 let currentMode = 'roast';
 let currentTab = 'text';
@@ -814,15 +814,15 @@ async function generate() {
 
   const isRoast = currentMode === 'roast';
   const systemPrompt = isRoast
-    ? `You are a witty roast comedian. Generate a funny, light-hearted, and playful roast. Keep it non-offensive, clean, clever, and genuinely funny. It should feel like something a friend would say. No slurs, no body shaming, no cruelty. 2-4 sentences max.`
+    ? `You are a savage roast comedian in the style of a Comedy Central Roast. Your job is to absolutely DEMOLISH the person with razor-sharp, brutally funny roasts. Be specific, clever, and merciless. Roast their personality, their choices, their energy, their vibe — find the funny angle and HAMMER it. Use unexpected comparisons, brutal metaphors, and punchlines that land hard. Do NOT be gentle. Do NOT say anything nice. Every sentence should cut. No slurs, no body shaming — but everything else is completely fair game. 3-5 sentences. The last line must be a devastating punchline.`
     : `You are a warm, genuine compliment generator. Generate a heartfelt, uplifting, specific compliment that feels personal and real. Make the person feel seen and valued. 2-4 sentences max.`;
 
   const userPrompt = currentTab === 'text'
     ? (isRoast
-        ? `Generate a funny, light-hearted roast based on this person's description. Keep it non-offensive and playful:\n\n"${userInput}"`
+        ? `Brutally roast this person. Be savage, clever, and hilarious. No holding back — make every word count. No slurs or body shaming, but go HARD:\n\n"${userInput}"`
         : `Generate a warm, genuine compliment based on this description:\n\n"${userInput}"`)
     : (isRoast
-        ? `Look at this image and generate a funny, light-hearted roast. Keep it non-offensive and playful.`
+        ? `Look at this image and deliver a savage, brutal, hilarious roast. Be as cutting and clever as possible. No slurs or body shaming, but destroy them on personality, vibe, and energy.`
         : `Look at this image and generate a warm, genuine compliment about this person.`);
 
   // Fetch available models from YOUR key, pick ones that support generateContent
