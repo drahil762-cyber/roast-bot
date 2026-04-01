@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Roast & Compliment Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --fire: #ff4500;
+    --fire2: #ff8c00;
+    --love: #ff2d78;
+    --love2: #c850c0;
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3a;
+    --text: #f0f0ff;
+    --muted: #6b6b8a;
+    --accent: #ff4500;
+    --glow: rgba(255,69,0,0.3);
+  }
+  .mode-compliment { --accent: #ff2d78; --glow: rgba(255,45,120,0.3); }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(255,69,0,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 110%, rgba(255,45,120,0.08) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+    transition: background 0.6s ease;
+  }
+  body.mode-compliment::before {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(255,45,120,0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 110%, rgba(200,80,192,0.1) 0%, transparent 55%);
+  }
+
+  /* Noise grain */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: slideDown 0.7s cubic-bezier(.22,1,.36,1) both;
+  }
+  .tagline-top {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 10vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #ff4500 0%, #ff8c00 40%, #ff2d78 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .tagline {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .tagline em { color: var(--fire2); font-style: normal; }
+
+  /* ── API Key ── */
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: slideUp 0.7s 0.1s cubic-bezier(.22,1,.36,1) both;
+  }
+  .api-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .api-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+  .api-row { display: flex; gap: 10px; }
+  .api-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .api-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+  .api-input::placeholder { color: var(--muted); }
+  .toggle-key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .toggle-key:hover { color: var(--text); border-color: var(--accent); }
+  .key-status {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .key-status.valid { color: #4ade80; }
+  .key-status.invalid { color: #f87171; }
+
+  /* ── Mode Toggle ── */
+  .mode-section {
+    margin-bottom: 28px;
+    animation: slideUp 0.7s 0.2s cubic-bezier(.22,1,.36,1) both;
+  }
+  .mode-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .mode-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.22,1,.36,1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .mode-btn.roast::before {
+    background: linear-gradient(135deg, rgba(255,69,0,0.1), rgba(255,140,0,0.05));
+  }
+  .mode-btn.compliment::before {
+    background: linear-gradient(135deg, rgba(255,45,120,0.1), rgba(200,80,192,0.05));
+  }
+  .mode-btn.active::before { opacity: 1; }
+  .mode-btn.active.roast {
+    border-color: var(--fire);
+    box-shadow: 0 0 24px rgba(255,69,0,0.25), inset 0 0 0 1px rgba(255,69,0,0.1);
+  }
+  .mode-btn.active.compliment {
+    border-color: var(--love);
+    box-shadow: 0 0 24px rgba(255,45,120,0.25), inset 0 0 0 1px rgba(255,45,120,0.1);
+  }
+  .mode-btn:hover:not(.active) { border-color: var(--border); transform: translateY(-2px); }
+  .mode-icon { font-size: 36px; margin-bottom: 8px; display: block; }
+  .mode-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .mode-desc { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* ── Input Section ── */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    animation: slideUp 0.7s 0.3s cubic-bezier(.22,1,.36,1) both;
+  }
+  .input-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.5px;
+  }
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* Text tab */
+  .text-area {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    line-height: 1.6;
+  }
+  .text-area:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+  .text-area::placeholder { color: var(--muted); }
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Image tab */
+  .img-tab { display: none; }
+  .img-tab.active { display: block; }
+  .text-tab { display: none; }
+  .text-tab.active { display: block; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(255,69,0,0.04);
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+  .drop-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .preview-wrap { position: relative; }
+  .img-preview {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: none;
+  }
+  .img-preview.show { display: block; }
+  .remove-img {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7);
+    border: none;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .remove-img.show { display: flex; }
+  .remove-img:hover { background: rgba(255,69,0,0.8); }
+
+  /* ── Generate Button ── */
+  .generate-btn {
+    width: 100%;
+    padding: 20px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.3s;
+    margin-bottom: 28px;
+    animation: slideUp 0.7s 0.4s cubic-bezier(.22,1,.36,1) both;
+  }
+  .generate-btn.roast-btn {
+    background: linear-gradient(135deg, #ff4500, #ff8c00);
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(255,69,0,0.35);
+  }
+  .generate-btn.compliment-btn {
+    background: linear-gradient(135deg, #ff2d78, #c850c0);
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(255,45,120,0.35);
+  }
+  .generate-btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .generate-btn:active:not(:disabled) { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .generate-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .generate-btn:hover::after { transform: translateX(100%); }
+
+  /* loading state */
+  .btn-text { display: block; }
+  .btn-loading { display: none; align-items: center; justify-content: center; gap: 10px; }
+  .generating .btn-text { display: none; }
+  .generating .btn-loading { display: flex; }
+  .dots span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ── Result ── */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px;
+    display: none;
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card.show { display: block; }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .result-card.roast-result::before {
+    background: linear-gradient(90deg, #ff4500, #ff8c00);
+  }
+  .result-card.compliment-result::before {
+    background: linear-gradient(90deg, #ff2d78, #c850c0);
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .result-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .result-badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  .roast-result .dot { background: var(--fire); box-shadow: 0 0 8px var(--fire); }
+  .compliment-result .dot { background: var(--love); box-shadow: 0 0 8px var(--love); }
+  .roast-result .result-badge { color: var(--fire2); }
+  .compliment-result .result-badge { color: var(--love); }
+
+  .result-text {
+    font-size: clamp(18px, 3vw, 24px);
+    line-height: 1.6;
+    font-weight: 600;
+    margin-bottom: 28px;
+    letter-spacing: 0.2px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .action-btn:hover {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.04);
+    transform: translateY(-1px);
+  }
+  .action-btn.speaking {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .action-btn.copied {
+    border-color: #4ade80;
+    color: #4ade80;
+  }
+
+  /* Share card overlay */
+  .share-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .share-overlay.show { display: flex; }
+  .share-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+    animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .share-modal h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  #shareCanvas {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .share-actions { display: flex; gap: 10px; }
+  .share-dl {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .share-dl:hover { opacity: 0.85; }
+  .share-close {
+    padding: 13px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.2s;
+  }
+  .share-close:hover { color: var(--text); }
+
+  /* Error */
+  .error-msg {
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #f87171;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 64px;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+  footer span { color: var(--fire2); }
+
+  /* Animations */
+  @keyframes slideDown {
+    from { opacity:0; transform:translateY(-30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.9); }
+    to   { opacity:1; transform:scale(1); }
+  }
+  @keyframes bounce {
+    0%,80%,100% { transform:translateY(0); }
+    40%         { transform:translateY(-8px); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50%     { opacity:0.4; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <p class="tagline-top">AI-Powered · Instant · Hilarious</p>
+    <h1>Roast &<br>Praise</h1>
+    <p class="tagline">Get <em>roasted</em>. Get <em>praised</em>. Get <em>noticed</em>.</p>
+  </header>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <div class="api-label">Gemini API Key</div>
+    <div class="api-row">
+      <input class="api-input" id="apiKey" type="password" placeholder="AIzaSy..." autocomplete="off" spellcheck="false"/>
+      <button class="toggle-key" id="toggleKey" title="Show/Hide key">👁</button>
+    </div>
+    <div class="key-status" id="keyStatus">Enter your Gemini API key to get started</div>
+    <div style="margin-top:14px;">
+      <div class="api-label" style="margin-bottom:8px;">Model</div>
+      <select class="api-input" id="modelSelect" style="cursor:pointer;">
+        <option value="gemini-1.5-flash">gemini-1.5-flash (recommended free tier)</option>
+        <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b (fastest / lightest)</option>
+        <option value="gemini-1.5-pro">gemini-1.5-pro (more powerful)</option>
+        <option value="gemini-2.0-flash">gemini-2.0-flash (paid tier)</option>
+        <option value="gemini-2.5-pro-exp-03-25">gemini-2.5-pro-exp (experimental)</option>
+      </select>
+      <div class="key-status" style="margin-top:6px;">💡 If you hit a quota error, try <strong style="color:#ff8c00">gemini-1.5-flash-8b</strong> — it has the most generous free limits</div>
+    </div>
+  </div>
+
+  <!-- Mode Selection -->
+  <div class="mode-section">
+    <div class="mode-label">Select Mode</div>
+    <div class="mode-toggle">
+      <button class="mode-btn roast active" id="roastBtn" onclick="setMode('roast')">
+        <span class="mode-icon">🔥</span>
+        <span class="mode-name">Roast Me</span>
+        <span class="mode-desc">Funny & savage</span>
+      </button>
+      <button class="mode-btn compliment" id="complimentBtn" onclick="setMode('compliment')">
+        <span class="mode-icon">💖</span>
+        <span class="mode-name">Praise Me</span>
+        <span class="mode-desc">Warm & uplifting</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section">
+    <div class="input-tabs">
+      <button class="tab-btn active" id="textTab" onclick="switchTab('text')">✏️ Text / Bio</button>
+      <button class="tab-btn" id="imgTab" onclick="switchTab('image')">📸 Selfie / Photo</button>
+    </div>
+
+    <div class="text-tab active" id="textPanel">
+      <textarea class="text-area" id="textInput" placeholder="Describe yourself, paste your bio, or type anything about you — the more details, the better the roast/compliment 🎯" maxlength="600" oninput="updateCharCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span> / 600</div>
+    </div>
+
+    <div class="img-tab" id="imgPanel">
+      <div class="preview-wrap">
+        <img class="img-preview" id="imgPreview" alt="Preview"/>
+        <button class="remove-img" id="removeImg" onclick="clearImage()">✕</button>
+      </div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this)"/>
+        <span class="drop-icon">🖼️</span>
+        <div class="drop-title">Drop your photo here</div>
+        <div class="drop-sub">or click to browse · JPG, PNG, WEBP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Generate -->
+  <button class="generate-btn roast-btn" id="generateBtn" onclick="generate()">
+    <span class="btn-text" id="btnText">🔥 ROAST ME</span>
+    <span class="btn-loading">
+      <span class="dots"><span></span><span></span><span></span></span>
+      <span id="loadingText">Cooking your roast…</span>
+    </span>
+  </button>
+
+  <!-- Result -->
+  <div class="result-card roast-result" id="resultCard">
+    <div class="result-header">
+      <div class="result-badge"><span class="dot"></span><span id="resultLabel">ROAST DELIVERED</span></div>
+      <span style="font-size:24px" id="resultEmoji">🔥</span>
+    </div>
+    <div class="result-text" id="resultText"></div>
+    <div class="result-actions">
+      <button class="action-btn" id="speakBtn" onclick="speak()">🔊 Listen</button>
+      <button class="action-btn" id="copyBtn" onclick="copyText()">📋 Copy</button>
+      <button class="action-btn" onclick="openShare()">🃏 Share Card</button>
+    </div>
+  </div>
+
+  <footer>
+    Built with <span>♥ + 🔥</span> using Gemini AI &nbsp;·&nbsp; Roast &amp; Praise Machine
+  </footer>
+</div>
+
+<!-- Share Overlay -->
+<div class="share-overlay" id="shareOverlay" onclick="closeShare(event)">
+  <div class="share-modal">
+    <h3>📤 Share Your Card</h3>
+    <canvas id="shareCanvas"></canvas>
+    <div class="share-actions">
+      <button class="share-dl roast-btn" id="dlBtn" style="background:linear-gradient(135deg,#ff4500,#ff8c00);color:#fff;" onclick="downloadCard()">⬇ Download</button>
+      <button class="share-close" onclick="closeShare()">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMode = 'roast';
+let currentTab = 'text';
+let imageBase64 = null;
+let lastResult = '';
+let isSpeaking = false;
+
+// ── Mode ──
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('roastBtn').classList.toggle('active', mode === 'roast');
+  document.getElementById('complimentBtn').classList.toggle('active', mode === 'compliment');
+  document.body.classList.toggle('mode-compliment', mode === 'compliment');
+
+  const btn = document.getElementById('generateBtn');
+  btn.className = `generate-btn ${mode === 'roast' ? 'roast-btn' : 'compliment-btn'}`;
+  document.getElementById('btnText').textContent = mode === 'roast' ? '🔥 ROAST ME' : '💖 COMPLIMENT ME';
+  document.getElementById('loadingText').textContent = mode === 'roast' ? 'Cooking your roast…' : 'Gathering kindness…';
+
+  // update result card class
+  const card = document.getElementById('resultCard');
+  card.classList.remove('roast-result','compliment-result');
+}
+
+// ── Tabs ──
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('textTab').classList.toggle('active', tab === 'text');
+  document.getElementById('imgTab').classList.toggle('active', tab === 'image');
+  document.getElementById('textPanel').classList.toggle('active', tab === 'text');
+  document.getElementById('imgPanel').classList.toggle('active', tab === 'image');
+}
+
+// ── Char count ──
+function updateCharCount() {
+  document.getElementById('charCount').textContent = document.getElementById('textInput').value.length;
+}
+
+// ── API Key UI ──
+const apiKeyEl = document.getElementById('apiKey');
+const toggleKeyEl = document.getElementById('toggleKey');
+const keyStatusEl = document.getElementById('keyStatus');
+
+toggleKeyEl.onclick = () => {
+  apiKeyEl.type = apiKeyEl.type === 'password' ? 'text' : 'password';
+};
+apiKeyEl.addEventListener('input', () => {
+  const v = apiKeyEl.value.trim();
+  if (!v) { keyStatusEl.className = 'key-status'; keyStatusEl.textContent = 'Enter your Gemini API key to get started'; }
+  else if (v.startsWith('AIza') && v.length > 20) { keyStatusEl.className = 'key-status valid'; keyStatusEl.textContent = '✓ Key looks valid'; }
+  else { keyStatusEl.className = 'key-status invalid'; keyStatusEl.textContent = '⚠ Key format looks off'; }
+});
+
+// ── Image handling ──
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    imageBase64 = dataUrl.split(',')[1];
+    document.getElementById('imgPreview').src = dataUrl;
+    document.getElementById('imgPreview').classList.add('show');
+    document.getElementById('removeImg').classList.add('show');
+    document.getElementById('dropZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearImage() {
+  imageBase64 = null;
+  document.getElementById('imgPreview').classList.remove('show');
+  document.getElementById('removeImg').classList.remove('show');
+  document.getElementById('dropZone').style.display = '';
+  document.getElementById('fileInput').value = '';
+}
+// Drag & drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+    handleFile(document.getElementById('fileInput'));
+  }
+});
+
+// ── Show error ──
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function clearError() {
+  document.getElementById('errorMsg').classList.remove('show');
+}
+
+// ── Generate ──
+async function generate() {
+  clearError();
+  const apiKey = apiKeyEl.value.trim();
+  if (!apiKey) { showError('⚠ Please enter your Gemini API key first.'); return; }
+
+  let userInput = '';
+  if (currentTab === 'text') {
+    userInput = document.getElementById('textInput').value.trim();
+    if (!userInput) { showError('⚠ Please enter some text about yourself.'); return; }
+  } else {
+    if (!imageBase64) { showError('⚠ Please upload an image first.'); return; }
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.classList.add('generating'); btn.disabled = true;
+  document.getElementById('resultCard').classList.remove('show');
+  stopSpeech();
+
+  const isRoast = currentMode === 'roast';
+  const systemPrompt = isRoast
+    ? `You are a witty roast comedian. Generate a funny, light-hearted, and playful roast. Keep it non-offensive, clean, clever, and genuinely funny. It should feel like something a friend would say. No slurs, no body shaming, no cruelty. 2-4 sentences max.`
+    : `You are a warm, genuine compliment generator. Generate a heartfelt, uplifting, specific compliment that feels personal and real. Make the person feel seen and valued. 2-4 sentences max.`;
+
+  const userPrompt = currentTab === 'text'
+    ? (isRoast
+        ? `Generate a funny, light-hearted roast based on this person's description. Keep it non-offensive and playful:\n\n"${userInput}"`
+        : `Generate a warm, genuine compliment based on this description:\n\n"${userInput}"`)
+    : (isRoast
+        ? `Look at this image and generate a funny, light-hearted roast. Keep it non-offensive and playful.`
+        : `Look at this image and generate a warm, genuine compliment about this person.`);
+
+  const FALLBACK_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+
+  async function callGemini(model) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const parts = [];
+    if (currentTab === 'image' && imageBase64) {
+      parts.push({ inlineData: { mimeType: 'image/jpeg', data: imageBase64 } });
+    }
+    parts.push({ text: userPrompt });
+    const body = {
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts }],
+      generationConfig: { temperature: 1.1, maxOutputTokens: 300 }
+    };
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data?.error?.message || 'API error';
+      const isQuota = msg.toLowerCase().includes('quota') || res.status === 429;
+      const err = new Error(msg);
+      err.isQuota = isQuota;
+      throw err;
+    }
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  }
+
+  try {
+    const selectedModel = document.getElementById('modelSelect').value;
+    const modelsToTry = [selectedModel, ...FALLBACK_MODELS.filter(m => m !== selectedModel)];
+    let text = null;
+    let lastErr = null;
+
+    for (const model of modelsToTry) {
+      try {
+        document.getElementById('loadingText').textContent = `Trying ${model}...`;
+        text = await callGemini(model);
+        if (text) {
+          document.getElementById('modelSelect').value = model;
+          break;
+        }
+      } catch (err) {
+        lastErr = err;
+        if (err.isQuota) continue;
+        throw err;
+      }
+    }
+
+    if (!text) {
+      throw new Error('All models hit quota limits. Wait 1 minute and try again, or use a paid key. Last error: ' + (lastErr?.message || 'unknown'));
+    }
+
+    lastResult = text.trim();
+    showResult(lastResult);
+  } catch (err) {
+    const isQuota = err.message.toLowerCase().includes('quota') || err.message.includes('429');
+    showError((isQuota ? '⏳ Quota limit hit. ' : '❌ ') + err.message + (isQuota ? ' — Switch the Model dropdown to gemini-1.5-flash-8b and try again.' : ''));
+  } finally {
+    btn.classList.remove('generating'); btn.disabled = false;
+    document.getElementById('loadingText').textContent = currentMode === 'roast' ? 'Cooking your roast...' : 'Gathering kindness...';
+  }
+}
+
+// ── Show result ──
+function showResult(text) {
+  const card = document.getElementById('resultCard');
+  const isRoast = currentMode === 'roast';
+  card.className = `result-card show ${isRoast ? 'roast-result' : 'compliment-result'}`;
+  document.getElementById('resultText').textContent = text;
+  document.getElementById('resultLabel').textContent = isRoast ? 'ROAST DELIVERED 🔥' : 'COMPLIMENT DELIVERED 💖';
+  document.getElementById('resultEmoji').textContent = isRoast ? '🔥' : '💖';
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.getElementById('copyBtn').className = 'action-btn';
+  document.getElementById('speakBtn').className = 'action-btn';
+}
+
+// ── Speech ──
+function speak() {
+  if (!lastResult) return;
+  if (isSpeaking) { stopSpeech(); return; }
+  const utt = new SpeechSynthesisUtterance(lastResult);
+  utt.rate = 0.95; utt.pitch = currentMode === 'roast' ? 0.9 : 1.1;
+  utt.onend = () => { isSpeaking = false; document.getElementById('speakBtn').className = 'action-btn'; document.getElementById('speakBtn').textContent = '🔊 Listen'; };
+  speechSynthesis.speak(utt);
+  isSpeaking = true;
+  document.getElementById('speakBtn').className = 'action-btn speaking';
+  document.getElementById('speakBtn').textContent = '⏹ Stop';
+}
+function stopSpeech() {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  isSpeaking = false;
+  const sb = document.getElementById('speakBtn');
+  if (sb) { sb.className = 'action-btn'; sb.textContent = '🔊 Listen'; }
+}
+
+// ── Copy ──
+async function copyText() {
+  if (!lastResult) return;
+  await navigator.clipboard.writeText(lastResult).catch(() => {});
+  const btn = document.getElementById('copyBtn');
+  btn.className = 'action-btn copied'; btn.textContent = '✓ Copied!';
+  setTimeout(() => { btn.className = 'action-btn'; btn.textContent = '📋 Copy'; }, 2000);
+}
+
+// ── Share Card ──
+function openShare() {
+  if (!lastResult) return;
+  drawCard();
+  document.getElementById('shareOverlay').classList.add('show');
+}
+function closeShare(e) {
+  if (!e || e.target === document.getElementById('shareOverlay') || !e.target) {
+    document.getElementById('shareOverlay').classList.remove('show');
+  }
+}
+function drawCard() {
+  const canvas = document.getElementById('shareCanvas');
+  const W = 900, H = 500;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const isRoast = currentMode === 'roast';
+
+  // bg
+  ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
+
+  // gradient
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  if (isRoast) { grad.addColorStop(0,'rgba(255,69,0,0.15)'); grad.addColorStop(1,'rgba(255,140,0,0.05)'); }
+  else { grad.addColorStop(0,'rgba(255,45,120,0.15)'); grad.addColorStop(1,'rgba(200,80,192,0.05)'); }
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+  // top bar
+  const bar = ctx.createLinearGradient(0,0,W,0);
+  if (isRoast) { bar.addColorStop(0,'#ff4500'); bar.addColorStop(1,'#ff8c00'); }
+  else { bar.addColorStop(0,'#ff2d78'); bar.addColorStop(1,'#c850c0'); }
+  ctx.fillStyle = bar; ctx.fillRect(0,0,W,5);
+
+  // emoji
+  ctx.font = '60px serif'; ctx.textAlign = 'left';
+  ctx.fillText(isRoast ? '🔥' : '💖', 52, 100);
+
+  // label
+  ctx.fillStyle = isRoast ? '#ff8c00' : '#ff2d78';
+  ctx.font = 'bold 13px monospace'; ctx.letterSpacing = '3px';
+  ctx.fillText((isRoast ? 'ROAST' : 'COMPLIMENT') + ' DELIVERED', 120, 80);
+
+  // result text — word wrap
+  ctx.fillStyle = '#f0f0ff'; ctx.font = '600 26px sans-serif'; ctx.letterSpacing = '0';
+  const words = lastResult.split(' ');
+  let line = '', lines = [], maxW = W - 104;
+  for (const word of words) {
+    const test = line + (line ? ' ' : '') + word;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = word; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  const startY = H/2 - (lines.length * 36)/2;
+  lines.forEach((l, i) => ctx.fillText(l, 52, startY + i*38));
+
+  // footer
+  ctx.fillStyle = '#6b6b8a'; ctx.font = '12px monospace';
+  ctx.fillText('roast-praise-machine.ai  ·  Powered by Gemini', 52, H - 28);
+  ctx.textAlign = 'right';
+  ctx.fillText(isRoast ? '😈' : '😇', W - 52, H - 22);
+}
+function downloadCard() {
+  const canvas = document.getElementById('shareCanvas');
+  const a = document.createElement('a');
+  a.download = `${currentMode}_card.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// Enter key
+document.getElementById('textInput').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
